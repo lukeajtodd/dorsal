@@ -1,7 +1,10 @@
 package main
 
-import "luketodd/dorsal/migrations"
+import (
+	"luketodd/dorsal/api"
+)
 
 func main() {
-	migrations.Migrate()
+	// migrations.Migrate()
+	api.StartApi()
 }
