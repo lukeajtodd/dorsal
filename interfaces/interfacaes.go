@@ -1,4 +1,4 @@
-package models
+package interfaces
 
 import "github.com/jinzhu/gorm"
 
@@ -15,4 +15,17 @@ type Account struct {
 	Name    string
 	Balance uint
 	UserID  uint
+}
+
+type ResponseAccount struct {
+	ID      uint
+	Name    string
+	Balance int
+}
+
+type ResponseUser struct {
+	ID       uint
+	Username string
+	Email    string
+	Accounts []ResponseAccount
 }
