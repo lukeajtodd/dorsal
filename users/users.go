@@ -55,19 +55,19 @@ func Login(username string, pass string) map[string]interface{} {
 	)
 
 	if !valid {
-		return map[string]interface{}{"message": "Invalid username or password"}
+		return map[string]interface{}{"message": "Invalid username or password", "status": 400}
 	} else {
 		db := helpers.ConnectDB()
 		user := &interfaces.User{}
 
 		if db.Where("username = ?", username).First(&user).RecordNotFound() {
-			return map[string]interface{}{"message": "User not found"}
+			return map[string]interface{}{"message": "User not found", "status": 404}
 		}
 
 		passErr := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(pass))
 
 		if passErr == bcrypt.ErrMismatchedHashAndPassword && passErr != nil {
-			return map[string]interface{}{"message": "Wrong credentials"}
+			return map[string]interface{}{"message": "Wrong credentials", "status": 400}
 		}
 
 		accounts := []interfaces.ResponseAccount{}
@@ -97,7 +97,7 @@ func Register(username string, email string, pass string) map[string]interface{}
 	)
 
 	if !valid {
-		return map[string]interface{}{"message": "Invalud username, email or password"}
+		return map[string]interface{}{"message": "Invalud username, email or password", "status": 400}
 	} else {
 		db := helpers.ConnectDB()
 
