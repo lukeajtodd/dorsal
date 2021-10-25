@@ -29,3 +29,8 @@ type ResponseUser struct {
 	Email    string
 	Accounts []ResponseAccount
 }
+
+type Validation struct {
+	Value string
+	Name  string
+}
