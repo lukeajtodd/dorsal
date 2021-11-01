@@ -28,48 +28,52 @@ type ErrResponse struct {
 	Status  interface{}
 }
 
-func login(w http.ResponseWriter, r *http.Request) {
+func readBody(r *http.Request) []byte {
 	body, err := ioutil.ReadAll(r.Body)
 	helpers.HandleErr(err)
 
-	var formattedBody Login
-	err = json.Unmarshal(body, &formattedBody)
-	helpers.HandleErr(err)
+	return body
+}
 
-	login := users.Login(formattedBody.Username, formattedBody.Password)
-
-	if login["status"] == 200 {
-		resp := login
+func apiResponse(
+	call map[string]interface{},
+	w http.ResponseWriter,
+	message string,
+) {
+	if call["status"] == 200 {
+		resp := call
 		json.NewEncoder(w).Encode(resp)
 	} else {
 		resp := ErrResponse{
-			Message: "Wrong username or password",
-			Status:  login["status"],
+			Message: message,
+			Status:  call["status"],
 		}
 		json.NewEncoder(w).Encode(resp)
 	}
 }
 
-func register(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
+func login(w http.ResponseWriter, r *http.Request) {
+	body := readBody(r)
+
+	var formattedBody Login
+	err := json.Unmarshal(body, &formattedBody)
 	helpers.HandleErr(err)
 
+	login := users.Login(formattedBody.Username, formattedBody.Password)
+
+	apiResponse(login, w, "Wrong username or password")
+}
+
+func register(w http.ResponseWriter, r *http.Request) {
+	body := readBody(r)
+
 	var formattedBody Register
-	err = json.Unmarshal(body, &formattedBody)
+	err := json.Unmarshal(body, &formattedBody)
 	helpers.HandleErr(err)
 
 	register := users.Register(formattedBody.Username, formattedBody.Email, formattedBody.Password)
 
-	if register["status"] == 200 {
-		resp := register
-		json.NewEncoder(w).Encode(resp)
-	} else {
-		resp := ErrResponse{
-			Message: "Invalid credentials",
-			Status:  register["status"],
-		}
-		json.NewEncoder(w).Encode(resp)
-	}
+	apiResponse(register, w, "Invalid credentials")
 }
 
 func StartApi() {
