@@ -34,3 +34,8 @@ type Validation struct {
 	Value string
 	Name  string
 }
+
+type ErrResponse struct {
+	Message string
+	Status  interface{}
+}

@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"luketodd/dorsal/helpers"
+	"luketodd/dorsal/interfaces"
 	"luketodd/dorsal/users"
 	"net/http"
 
@@ -21,11 +22,6 @@ type Register struct {
 	Username string
 	Email    string
 	Password string
-}
-
-type ErrResponse struct {
-	Message string
-	Status  interface{}
 }
 
 func readBody(r *http.Request) []byte {
@@ -44,7 +40,7 @@ func apiResponse(
 		resp := call
 		json.NewEncoder(w).Encode(resp)
 	} else {
-		resp := ErrResponse{
+		resp := interfaces.ErrResponse{
 			Message: message,
 			Status:  call["status"],
 		}
@@ -76,10 +72,21 @@ func register(w http.ResponseWriter, r *http.Request) {
 	apiResponse(register, w, "Invalid credentials")
 }
 
+func getUser(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	userId := vars["id"]
+	auth := r.Header.Get("Authorization")
+
+	user := users.GetUser(userId, auth)
+	apiResponse(user, w, "No user found")
+}
+
 func StartApi() {
 	router := mux.NewRouter()
+	router.Use(helpers.PanicHandler)
 	router.HandleFunc("/login", login).Methods("POST")
 	router.HandleFunc("/register", register).Methods("POST")
+	router.HandleFunc("/user/{id}", getUser).Methods("GET")
 	fmt.Println("App is working on port :8888")
 	log.Fatal(http.ListenAndServe(":8888", router))
 }
