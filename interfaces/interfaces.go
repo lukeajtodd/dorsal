@@ -44,5 +44,5 @@ type Transaction struct {
 	gorm.Model
 	From   uint
 	To     uint
-	Amount uint
+	Amount int
 }

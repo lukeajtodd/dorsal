@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"luketodd/dorsal/helpers"
 	"luketodd/dorsal/interfaces"
+	"luketodd/dorsal/transactions"
 )
 
-func updateAccount(id uint, amount int) {
+func updateAccount(id uint, amount int) interfaces.ResponseAccount {
 	db := helpers.ConnectDB()
 	account := interfaces.Account{}
 	responseAcc := interfaces.ResponseAccount{}
@@ -45,13 +46,13 @@ func Transaction(userId uint, from uint, to uint, amount int, jwt string) map[st
 		if fromAccount == nil || toAccount == nil {
 			return map[string]interface{}{"message": "Account not found", "status": 404}
 		} else if fromAccount.UserID != userId {
-			return map[string]interface{}{"message": "You are not the owner of the account", "status": 400}]
+			return map[string]interface{}{"message": "You are not the owner of the account", "status": 400}
 		} else if int(fromAccount.Balance) < amount {
 			return map[string]interface{}{"message": "Insufficient balance", "status": 400}
 		}
 
-		updatedAccount := updateAccount(from, int(fromAccount.Balance) - amount)
-		updateAccount(to, int(toAccount.Balance) + amount)
+		updatedAccount := updateAccount(from, int(fromAccount.Balance)-amount)
+		updateAccount(to, int(toAccount.Balance)+amount)
 
 		transactions.CreateTransaction(from, to, amount)
 
