@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"luketodd/dorsal/interfaces"
 	"net/http"
@@ -44,21 +43,18 @@ func Validation(values []interfaces.Validation) bool {
 		switch values[i].Name {
 		case "username":
 			errs := validate.Var(values[i].Value, "required")
-			fmt.Println(errs)
 
 			if errs != nil {
 				return false
 			}
 		case "email":
 			errs := validate.Var(values[i].Value, "required,email")
-			fmt.Println(errs)
 
 			if errs != nil {
 				return false
 			}
 		case "password":
 			errs := validate.Var(values[i].Value, "required")
-			fmt.Println(errs)
 
 			if errs != nil {
 				return false
