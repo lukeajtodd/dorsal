@@ -42,6 +42,14 @@ func createAccounts(db *gorm.DB) {
 	}
 }
 
+func MigrateTransactions() {
+	Transactions := &interfaces.Transaction{}
+
+	db := helpers.ConnectDB()
+	db.AutoMigrate(&Transactions)
+	defer db.Close()
+}
+
 func Migrate() {
 	db := helpers.ConnectDB()
 	db.AutoMigrate(&interfaces.User{}, &interfaces.Account{})
