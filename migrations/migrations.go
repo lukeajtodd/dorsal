@@ -4,8 +4,7 @@ import (
 	"luketodd/dorsal/helpers"
 	"luketodd/dorsal/interfaces"
 
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"gorm.io/gorm"
 )
 
 func createAccounts(db *gorm.DB) {
@@ -47,13 +46,11 @@ func MigrateTransactions() {
 
 	db := helpers.ConnectDB()
 	db.AutoMigrate(&Transactions)
-	defer db.Close()
 }
 
 func Migrate() {
 	db := helpers.ConnectDB()
 	db.AutoMigrate(&interfaces.User{}, &interfaces.Account{})
-	defer db.Close()
 
 	createAccounts(db)
 }

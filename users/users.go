@@ -1,11 +1,13 @@
 package users
 
 import (
+	"errors"
 	"luketodd/dorsal/helpers"
 	"luketodd/dorsal/interfaces"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -67,7 +69,8 @@ func Login(username string, pass string) map[string]interface{} {
 		db := helpers.ConnectDB()
 		user := &interfaces.User{}
 
-		if db.Where("username = ?", username).First(&user).RecordNotFound() {
+		result := db.Where("username = ?", username).First(&user)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return map[string]interface{}{"message": "User not found", "status": 404}
 		}
 
@@ -79,8 +82,6 @@ func Login(username string, pass string) map[string]interface{} {
 
 		accounts := []interfaces.ResponseAccount{}
 		db.Table("accounts").Select("id, name, balance").Where("user_id = ?", user.ID).Scan(&accounts)
-
-		defer db.Close()
 
 		var response = prepareResponse(user, accounts, true)
 
@@ -104,7 +105,7 @@ func Register(username string, email string, pass string) map[string]interface{}
 	)
 
 	if !valid {
-		return map[string]interface{}{"message": "Invalud username, email or password", "status": 400}
+		return map[string]interface{}{"message": "Invalid username, email or password", "status": 400}
 	} else {
 		db := helpers.ConnectDB()
 
@@ -127,8 +128,6 @@ func Register(username string, email string, pass string) map[string]interface{}
 
 		db.Create(&account)
 
-		defer db.Close()
-
 		accounts := []interfaces.ResponseAccount{}
 		respAccount := interfaces.ResponseAccount{
 			ID:      account.ID,
@@ -148,13 +147,13 @@ func GetUser(id string, jwt string) map[string]interface{} {
 	if isValid {
 		db := helpers.ConnectDB()
 		user := &interfaces.User{}
-		if db.Where("id = ? ", id).First(&user).RecordNotFound() {
+
+		result := db.Where("id = ? ", id).First(&user)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return map[string]interface{}{"message": "User not found", "status": 404}
 		}
 		accounts := []interfaces.ResponseAccount{}
 		db.Table("accounts").Select("id, name, balance").Where("user_id = ? ", user.ID).Scan(&accounts)
-
-		defer db.Close()
 
 		var response = prepareResponse(user, accounts, false)
 		return response

@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"luketodd/dorsal/interfaces"
 	"net/http"
@@ -10,8 +11,10 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/go-playground/validator"
-	"github.com/jinzhu/gorm"
+
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func HandleErr(err error) {
@@ -28,7 +31,8 @@ func HashAndSalt(pass []byte) string {
 }
 
 func ConnectDB() *gorm.DB {
-	db, err := gorm.Open("postgres", "host=127.0.0.1 port=5432 user=dorsal dbname=dorsal password=password sslmode=disable")
+	dsn := "host=127.0.0.1 port=5432 user=dorsal dbname=dorsal password=password sslmode=disable"
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	HandleErr(err)
 	return db
 }
@@ -39,19 +43,22 @@ func Validation(values []interfaces.Validation) bool {
 	for i := 0; i < len(values); i++ {
 		switch values[i].Name {
 		case "username":
-			errs := validate.Var(values[i].Value, "required,alphanum")
+			errs := validate.Var(values[i].Value, "required")
+			fmt.Println(errs)
 
 			if errs != nil {
 				return false
 			}
 		case "email":
 			errs := validate.Var(values[i].Value, "required,email")
+			fmt.Println(errs)
 
 			if errs != nil {
 				return false
 			}
 		case "password":
 			errs := validate.Var(values[i].Value, "required")
+			fmt.Println(errs)
 
 			if errs != nil {
 				return false
