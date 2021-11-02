@@ -39,3 +39,10 @@ type ErrResponse struct {
 	Message string
 	Status  interface{}
 }
+
+type Transaction struct {
+	gorm.Model
+	From   uint
+	To     uint
+	Amount uint
+}
