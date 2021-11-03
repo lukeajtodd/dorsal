@@ -3,21 +3,21 @@ package useraccounts
 import (
 	"errors"
 	"fmt"
+	"luketodd/dorsal/database"
 	"luketodd/dorsal/helpers"
 	"luketodd/dorsal/interfaces"
 	"luketodd/dorsal/transactions"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 func updateAccount(id uint, amount int) interfaces.ResponseAccount {
-	db := helpers.ConnectDB()
 	account := interfaces.Account{}
 	responseAcc := interfaces.ResponseAccount{}
 
-	db.Where("id = ? ", id).First(&account)
+	database.DB.Where("id = ? ", id).First(&account)
 	account.Balance = uint(amount)
-	db.Save(&account)
+	database.DB.Save(&account)
 
 	responseAcc.ID = account.ID
 	responseAcc.Name = account.Name
@@ -27,10 +27,9 @@ func updateAccount(id uint, amount int) interfaces.ResponseAccount {
 }
 
 func getAccount(id *uint) *interfaces.Account {
-	db := helpers.ConnectDB()
 	account := &interfaces.Account{}
 
-	result := db.Where("id = ? ", id).First(&account)
+	result := database.DB.Where("id = ? ", id).First(&account)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return nil
 	}

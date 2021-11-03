@@ -1,6 +1,6 @@
 package interfaces
 
-import "github.com/jinzhu/gorm"
+import "gorm.io/gorm"
 
 type User struct {
 	gorm.Model
@@ -42,6 +42,13 @@ type ErrResponse struct {
 
 type Transaction struct {
 	gorm.Model
+	From   uint
+	To     uint
+	Amount int
+}
+
+type ResponseTransaction struct {
+	ID     uint
 	From   uint
 	To     uint
 	Amount int

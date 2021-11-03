@@ -2,13 +2,14 @@ package users
 
 import (
 	"errors"
+	"luketodd/dorsal/database"
 	"luketodd/dorsal/helpers"
 	"luketodd/dorsal/interfaces"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 func prepareToken(user *interfaces.User) string {
@@ -66,10 +67,9 @@ func Login(username string, pass string) map[string]interface{} {
 	if !valid {
 		return map[string]interface{}{"message": "Invalid username or password", "status": 400}
 	} else {
-		db := helpers.ConnectDB()
 		user := &interfaces.User{}
 
-		result := db.Where("username = ?", username).First(&user)
+		result := database.DB.Where("username = ?", username).First(&user)
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return map[string]interface{}{"message": "User not found", "status": 404}
 		}
@@ -81,7 +81,7 @@ func Login(username string, pass string) map[string]interface{} {
 		}
 
 		accounts := []interfaces.ResponseAccount{}
-		db.Table("accounts").Select("id, name, balance").Where("user_id = ?", user.ID).Scan(&accounts)
+		database.DB.Table("accounts").Select("id, name, balance").Where("user_id = ?", user.ID).Scan(&accounts)
 
 		var response = prepareResponse(user, accounts, true)
 
@@ -107,7 +107,6 @@ func Register(username string, email string, pass string) map[string]interface{}
 	if !valid {
 		return map[string]interface{}{"message": "Invalid username, email or password", "status": 400}
 	} else {
-		db := helpers.ConnectDB()
 
 		generatedPassword := helpers.HashAndSalt([]byte(pass))
 
@@ -117,7 +116,7 @@ func Register(username string, email string, pass string) map[string]interface{}
 			Password: generatedPassword,
 		}
 
-		db.Create(&user)
+		database.DB.Create(&user)
 
 		account := &interfaces.Account{
 			Type:    "Daily Account",
@@ -126,7 +125,7 @@ func Register(username string, email string, pass string) map[string]interface{}
 			UserID:  user.ID,
 		}
 
-		db.Create(&account)
+		database.DB.Create(&account)
 
 		accounts := []interfaces.ResponseAccount{}
 		respAccount := interfaces.ResponseAccount{
@@ -145,15 +144,14 @@ func Register(username string, email string, pass string) map[string]interface{}
 func GetUser(id string, jwt string) map[string]interface{} {
 	isValid := helpers.ValidateToken(id, jwt)
 	if isValid {
-		db := helpers.ConnectDB()
 		user := &interfaces.User{}
 
-		result := db.Where("id = ? ", id).First(&user)
+		result := database.DB.Where("id = ? ", id).First(&user)
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return map[string]interface{}{"message": "User not found", "status": 404}
 		}
 		accounts := []interfaces.ResponseAccount{}
-		db.Table("accounts").Select("id, name, balance").Where("user_id = ? ", user.ID).Scan(&accounts)
+		database.DB.Table("accounts").Select("id, name, balance").Where("user_id = ? ", user.ID).Scan(&accounts)
 
 		var response = prepareResponse(user, accounts, false)
 		return response

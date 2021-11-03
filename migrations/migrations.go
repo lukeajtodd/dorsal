@@ -1,13 +1,12 @@
 package migrations
 
 import (
+	"luketodd/dorsal/database"
 	"luketodd/dorsal/helpers"
 	"luketodd/dorsal/interfaces"
-
-	"gorm.io/gorm"
 )
 
-func createAccounts(db *gorm.DB) {
+func createAccounts() {
 	users := [2]interfaces.User{
 		{
 			Username: "Greg",
@@ -28,7 +27,7 @@ func createAccounts(db *gorm.DB) {
 			Password: generatedPassword,
 		}
 
-		db.Create(&user)
+		database.DB.Create(&user)
 
 		account := interfaces.Account{
 			Type:    "Daily Account",
@@ -37,20 +36,16 @@ func createAccounts(db *gorm.DB) {
 			UserID:  user.ID,
 		}
 
-		db.Create(&account)
+		database.DB.Create(&account)
 	}
 }
 
-func MigrateTransactions() {
+func Migrate() {
+	User := &interfaces.User{}
+	Account := &interfaces.Account{}
 	Transactions := &interfaces.Transaction{}
 
-	db := helpers.ConnectDB()
-	db.AutoMigrate(&Transactions)
-}
+	database.DB.AutoMigrate(&User, Account, &Transactions)
 
-func Migrate() {
-	db := helpers.ConnectDB()
-	db.AutoMigrate(&interfaces.User{}, &interfaces.Account{})
-
-	createAccounts(db)
+	createAccounts()
 }

@@ -12,8 +12,6 @@ import (
 	"github.com/go-playground/validator"
 
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
 
 func HandleErr(err error) {
@@ -27,13 +25,6 @@ func HashAndSalt(pass []byte) string {
 	HandleErr(err)
 
 	return string(hashed)
-}
-
-func ConnectDB() *gorm.DB {
-	dsn := "host=127.0.0.1 port=5432 user=dorsal dbname=dorsal password=password sslmode=disable"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	HandleErr(err)
-	return db
 }
 
 func Validation(values []interfaces.Validation) bool {

@@ -6,6 +6,7 @@
 - Still a fair bit
 - Unique users, by email
 - FE things
+- Store transactions in chainDB
 
 ## Completed
 - Register endpoint
